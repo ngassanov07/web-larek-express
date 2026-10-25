@@ -1,7 +1,5 @@
 import { randomUUID } from 'crypto';
 import type { Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
-import validator from 'validator';
 import Product from '../models/Product';
 import { BadRequestError } from '../errors/ApiError';
 
@@ -21,31 +19,7 @@ export const createOrder = async (
   res: Response,
   next: NextFunction,
 ) => {
-  if (!req.body || typeof req.body !== 'object') {
-    return next(new BadRequestError('Invalid order data'));
-  }
-
-  const {
-    payment, email, phone, address, total, items,
-  } = req.body;
-
-  if (
-    !['card', 'online'].includes(payment)
-    || typeof email !== 'string'
-    || !validator.isEmail(email)
-    || typeof phone !== 'string'
-    || !phone.trim()
-    || typeof address !== 'string'
-    || !address.trim()
-    || !Number.isFinite(total)
-    || !Array.isArray(items)
-    || items.length === 0
-    || !items.every(
-      (id) => typeof id === 'string' && mongoose.isValidObjectId(id),
-    )
-  ) {
-    return next(new BadRequestError('Invalid order data'));
-  }
+  const { total, items } = req.body;
 
   try {
     const products = await Product.find({ _id: { $in: items } });

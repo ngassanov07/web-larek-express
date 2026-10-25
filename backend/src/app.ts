@@ -1,15 +1,15 @@
-import express, { Request, Response } from 'express';
+import express, { ErrorRequestHandler, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import { errors as celebrateErrors } from 'celebrate';
+import { isCelebrateError } from 'celebrate';
 import expressWinston from 'express-winston';
 import winston from 'winston';
 import connectDB from './config/db';
 import productRouter from './routes/product';
 import orderRouter from './routes/orders';
 import { errorHandler } from './middlewares/errorHandler';
-import { NotFoundError } from './errors/ApiError';
+import { BadRequestError, NotFoundError } from './errors/ApiError';
 
 dotenv.config();
 
@@ -17,6 +17,18 @@ connectDB();
 
 const PORT = process.env.PORT || 3000;
 const app = express();
+
+const celebrateErrorHandler: ErrorRequestHandler = (err, _req, _res, next) => {
+  if (isCelebrateError(err)) {
+    const message = [...err.details.values()]
+      .map((validationError) => validationError.message)
+      .join(', ');
+
+    return next(new BadRequestError(message));
+  }
+
+  return next(err);
+};
 
 app.use(cors({
   origin: process.env.ORIGIN_ALLOW,
@@ -55,7 +67,7 @@ app.use(expressWinston.errorLogger({
   format: winston.format.json(),
 }));
 
-app.use(celebrateErrors());
+app.use(celebrateErrorHandler);
 
 app.use(errorHandler);
 
