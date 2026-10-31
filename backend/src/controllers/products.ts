@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import Product from '../models/Product';
-import { BadRequestError, ConflictError } from '../errors/ApiError';
+import { BadRequestError } from '../errors/BadRequestError';
+import { ConflictError } from '../errors/ConflictError';
 
 export const getProducts = async (_req: Request, res: Response, next: NextFunction) => {
   try {

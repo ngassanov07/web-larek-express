@@ -10,7 +10,7 @@ const productBody = Joi.object({
   category: Joi.string()
     .valid('софт-скил', 'хард-скил', 'другое', 'дополнительное', 'кнопка')
     .required(),
-  price: Joi.number().allow(null).optional(),
+  price: Joi.number().min(0).allow(null).optional(),
 });
 
 const orderBody = Joi.object({

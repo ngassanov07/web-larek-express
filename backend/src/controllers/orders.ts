@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import type { Request, Response, NextFunction } from 'express';
 import Product from '../models/Product';
-import { BadRequestError } from '../errors/ApiError';
+import { BadRequestError } from '../errors/BadRequestError';
 
 type PaymentMethod = 'card' | 'online'
 
@@ -23,11 +23,12 @@ export const createOrder = async (
 
   try {
     const products = await Product.find({ _id: { $in: items } });
+    const productsById = new Map(
+      products.map((product) => [product._id.toString(), product] as const),
+    );
+    const orderedProducts = items.map((id) => productsById.get(id.toLowerCase()));
 
-    if (
-      products.length !== items.length
-      || products.some((product) => product.price === null)
-    ) {
+    if (orderedProducts.some((product) => !product || product.price === null)) {
       return next(
         new BadRequestError(
           'Order contains a missing or unavailable product',
@@ -35,8 +36,8 @@ export const createOrder = async (
       );
     }
 
-    const calculatedTotal = products.reduce(
-      (sum, product) => sum + (product.price ?? 0),
+    const calculatedTotal = orderedProducts.reduce(
+      (sum, product) => sum + (product?.price ?? 0),
       0,
     );
 

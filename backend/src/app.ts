@@ -9,7 +9,8 @@ import connectDB from './config/db';
 import productRouter from './routes/product';
 import orderRouter from './routes/orders';
 import { errorHandler } from './middlewares/errorHandler';
-import { BadRequestError, NotFoundError } from './errors/ApiError';
+import { BadRequestError } from './errors/BadRequestError';
+import { NotFoundError } from './errors/NotFoundError';
 
 dotenv.config();
 
